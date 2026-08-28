@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MapleBackEnd.Math
+namespace Math
 {
     public class Matrix
     {
