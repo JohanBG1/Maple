@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Maple/Maple.csproj" />
+  <Project Path="MapleBackEnd/MapleBackEnd.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+</Solution>
