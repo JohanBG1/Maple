@@ -1,5 +1,4 @@
-﻿using MapleBackEnd.Math;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
@@ -8,20 +7,20 @@ namespace Math
 {
     public struct Vector
     {
-        public List<double> Components { get; private set; }
-        public readonly bool IsPoint { get; init; }
+        public List<double> Components { get; set; }
+        public bool IsPoint => Components[Components.Count - 1] == 0;
 
         public double this[int index]
         {
             get => Components[index];
+            private set => Components[index] = value;
         }
 
-        public Vector(bool isPoint, params double[] components)
+        public Vector(bool isPoint, params List<double> components)
         {
             Components = components.ToList();
-            this.IsPoint = isPoint;
+            Components.Add(isPoint ? 0 : 1);
         }
-
 
         public readonly int Dimension => Components.Count - 1;
 
@@ -32,7 +31,7 @@ namespace Math
 
             double dot = 0;
 
-            for (int i = 0; i <= a.Dimension; i++)
+            for (int i = 0; i <= a.Dimension -1; i++)
             {
                 dot += a.Components[i] * b.Components[i];
             }
@@ -47,72 +46,86 @@ namespace Math
 
             List<double> components = new List<double>();
 
-            for(int i = 0; i <= a.Dimension; i++)
+            for(int i = 0; i <= a.Dimension -1; i++)
             {
                 components.Add(a[i] + b[i]);
             }
 
-            return new Vector(a.IsPoint || b.IsPoint, components.ToArray());
+            return new Vector(a.IsPoint || b.IsPoint, components);
         }
         
         public static Vector operator -(Vector a, Vector b)
         {
             if(a.Dimension != b.Dimension) throw new ArgumentException("Vectors must have the same dimension for subtraction.");
+            if (a.IsPoint && !b.IsPoint) throw new ArgumentException("can't subtract point from vector");
 
             List<double> components = new List<double>();
 
-            for (int i = 0; i <= a.Dimension; i++)
+            for (int i = 0; i <= a.Dimension - 1; i++)
             {
                 components.Add(a[i] - b[i]);
             }
                                // any point                 / is both point
-            return new Vector((a.IsPoint || b.IsPoint) && !(a.IsPoint && b.IsPoint), components.ToArray());
+            return new Vector((a.IsPoint || b.IsPoint) && !(a.IsPoint && b.IsPoint), components);
         }
-        
+
 
         public static Vector operator *(double scalar, Vector a)
         {
-
             if(a.IsPoint == true) throw new ArgumentException("Cannot scale a point.");
 
             List<double> components = new List<double>();
 
-            for (int i = 0; i <= a.Dimension; i++)
+            for (int i = 0; i <= a.Dimension - 1; i++)
             {
                 components.Add(a[i] * scalar);
             }
 
-            return new Vector(false, components.ToArray());
+            return new Vector(false, components);
         }
         
-        public static Vector MakeAffineCompination(List<Vector> vectors, List<double> weights)
+        public static Vector MakeAffineCombination(params List<(Vector vector, double weight)> vectorWeightSets)
         {
-            #region argument Exceptions
+            if (vectorWeightSets.Count <= 0) throw new ArgumentException("Need points and weights for affine combination");
+            List<Vector> vectors = new List<Vector>();
+            List<double> weights = new List<double>();
+
+            foreach((Vector vector, double weight) vectorWeightSet in vectorWeightSets)
+            {
+                vectors.Add(vectorWeightSet.vector);
+                weights.Add(vectorWeightSet.weight);
+            }
+
             int dimension = vectors[0].Dimension;
 
-            foreach (Vector vector in vectors)
+            foreach(Vector vector in vectors)
             {
-                if (vector.IsPoint == false) throw new ArgumentException("Can only make affine combination with points");
-                if (vector.Dimension != dimension) throw new ArgumentException("Can't make affine combination with different dimensions");
+                if (vector.Dimension != dimension) throw new ArgumentException("Can't make affine combinations with vectors that are different dimensions");
             }
 
             double weightSum = 0;
 
-            foreach (double weight in weights)
-            {
-                weightSum += weight;
+            for (int i = 0; i < vectors.Count; i++)
+            {            
+                weightSum += weights[i] * vectors[i][dimension + 1];
             }
 
-            if (!Numerics.AlmostZero(weightSum - 1)) throw new ArgumentException("The sum of the affine weights has to be 1");
-            #endregion
+            if (!Numerics.AlmostZero(weightSum - 1) || Numerics.AlmostZero(weightSum)) throw new ArgumentException("The sum of the affine weights has to be 1 or 0");
 
-            double[] components = new double[vectors[0].Dimension + 1];
+            for(int i = 0; i < vectors.Count; i++)
+            {
+                Vector v = vectors[i];
+                v[v.Dimension] = 0;
+                vectors[i] = v;
+            }
+
+            double[] components = new double[vectors[0].Dimension];
 
             for (int i = 0; i < vectors.Count; i++)
             {
                 double value = 0;
 
-                for (int j = 0; j <= vectors[0].Dimension; j++)
+                for (int j = 0; j <= vectors[0].Dimension - 1; j++)
                 {
                     value += weights[j] * vectors[j][i];
                 }
@@ -120,7 +133,7 @@ namespace Math
                 components[i] = value;
             }
 
-            return new Vector(true, components);
+            return new Vector(weightSum == 0 ? false : true, components.ToList());
         }
 
         public static bool operator ==(Vector a, Vector b)
@@ -128,7 +141,7 @@ namespace Math
             if (a.Dimension != b.Dimension) return false;
             if (a.IsPoint != b.IsPoint) return false;
 
-            for (int i = 0; i < a.Dimension; i++)
+            for (int i = 0; i < a.Dimension -1; i++)
             {
                 if (!Numerics.AlmostEqual(a[i], b[i])) return false;
             }
@@ -148,7 +161,7 @@ namespace Math
             {
                 result = "(";
 
-                for (int i = 0; i < Dimension; i++)
+                for (int i = 0; i < Dimension - 1; i++)
                 {
                     result += $"{this[i]}, ";
                 }
@@ -160,7 +173,7 @@ namespace Math
 
             else
             {
-                for (int i = 0; i <= Dimension; i++)
+                for (int i = 0; i <= Dimension - 1; i++)
                 {
                     result += $"[{this[i]}] \n";
                 }

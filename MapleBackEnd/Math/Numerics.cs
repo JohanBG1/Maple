@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
 
-namespace MapleBackEnd.Math
+namespace Math
 {
     public static class Numerics 
     {

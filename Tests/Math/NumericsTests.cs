@@ -1,8 +1,8 @@
-﻿using MapleBackEnd.Math;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
+using Math;
 
 using Xunit;
 using Xunit.Abstractions;

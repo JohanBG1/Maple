@@ -15,7 +15,6 @@ namespace Tests.Math
         public static TheoryData<Vector, Vector, Vector> SubtractionTestData() => new()
         {
             { new Vector(true, 1, 2, 3), new Vector(true, 4, 5, 6), new Vector(false, -3, -3, -3) },
-            { new Vector(true, 1, 2, 3), new Vector(false, 4, 5 ,6), new Vector(true, -3, -3, -3) },
             { new Vector(false, 1, 2, 3), new Vector(true, 4, 5, 6), new Vector(true, -3, -3, -3) },
             { new Vector(false, 1, 2, 3), new Vector(false, 4, 5, 6), new Vector(false, -3, -3, -3) }
         };
@@ -25,15 +24,10 @@ namespace Tests.Math
             { 3, new Vector(false, 3, 4, 5, 6), new Vector(false, 9, 12, 15, 18) }
         };
 
-        public static TheoryData<List<Vector>, List<double>, Vector> AffineCombinationTestData() => new()
+        public static TheoryData<List<(Vector,double)>, Vector> AffineCombinationTestData() => new()
         {
-            { new List<Vector>() { new Vector(true, 1, 2, 3), new Vector(true, 4, 5, 6), new Vector(true, 7, 8, 9)},
-              new List<double>()  { 0.1, 0.1, 0.8 }, new Vector(true, 6.1, 7.1, 8.1) },
-
-            { new List<Vector>() { new Vector(true, 1, 2, 3), new Vector(true, 4, 5, 6), new Vector(true, 7, 8, 9)},
-              new List<double>()  { 0.2, 0.2, 0.6 }, new Vector(true, 26/5.0, 31/5.0, 36/5.0) },
+            { new List<(Vector, double)>() {  (new Vector(true, 1, 2, 3), 0.1), (new Vector(true, 4, 5, 6), 0.1), (new Vector(true, 7, 8, 9), 0.8) }, new Vector(true, 6.1, 7.1, 8.1) },
         };
-
 
         public static TheoryData<Vector, Vector, double> DotTestData() => new()
         {
@@ -71,9 +65,10 @@ namespace Tests.Math
         
         [Theory]
         [MemberData(nameof(AffineCombinationTestData))]
-        public void AffineCombinationTest(List<Vector> vectors, List<double> weights, Vector expected)
+        public void AffineCombinationTest(List<(Vector vector, double weights), Vector expected)
         {
-            Vector result = Vector.MakeAffineCompination(vectors, weights);
+
+            Vector result = Vector.MakeAffineCombination();
 
             Output.WriteLine($"Result is {result}");
             Output.WriteLine($"Expected is {expected}");
@@ -91,5 +86,16 @@ namespace Tests.Math
             Output.WriteLine($"Expected: {expected}");
             Assert.True(result == expected);
         }
+
+        [Fact]
+        public void AddDifferentDimension()
+        {
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Vector result = new Vector(false, 1, 2, 3) + new Vector(false, 1, 2, 3, 4);
+            });
+        }
+
     }
 }
