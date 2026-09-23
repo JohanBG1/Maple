@@ -8,7 +8,7 @@ namespace Math
     public struct Vector
     {
         public List<double> Components { get; set; }
-        public bool IsPoint => Components[Components.Count - 1] == 0;
+        public bool IsPoint => Components[Components.Count - 1] == 1;
 
         public double this[int index]
         {
@@ -19,7 +19,7 @@ namespace Math
         public Vector(bool isPoint, params List<double> components)
         {
             Components = components.ToList();
-            Components.Add(isPoint ? 0 : 1);
+            Components.Add(isPoint ? 1 : 0);
         }
 
         public readonly int Dimension => Components.Count - 1;
@@ -105,12 +105,12 @@ namespace Math
 
             double weightSum = 0;
 
-            for (int i = 0; i < vectors.Count; i++)
+            for (int i = 0; i < weights.Count; i++)
             {            
-                weightSum += weights[i] * vectors[i][dimension + 1];
+                weightSum += weights[i] * vectors[i][dimension];
             }
 
-            if (!Numerics.AlmostZero(weightSum - 1) || Numerics.AlmostZero(weightSum)) throw new ArgumentException("The sum of the affine weights has to be 1 or 0");
+            if (!(Numerics.AlmostZero(weightSum - 1) || Numerics.AlmostZero(weightSum))) throw new ArgumentException("The sum of the affine weights has to be 1 or 0");
 
             for(int i = 0; i < vectors.Count; i++)
             {
@@ -139,9 +139,8 @@ namespace Math
         public static bool operator ==(Vector a, Vector b)
         {
             if (a.Dimension != b.Dimension) return false;
-            if (a.IsPoint != b.IsPoint) return false;
 
-            for (int i = 0; i < a.Dimension -1; i++)
+            for (int i = 0; i <= a.Dimension; i++)
             {
                 if (!Numerics.AlmostEqual(a[i], b[i])) return false;
             }
@@ -166,14 +165,14 @@ namespace Math
                     result += $"{this[i]}, ";
                 }
                 
-                result += $"{this[Dimension]})";
+                result += $"{this[Dimension - 1]})";
             }
 
             
 
             else
             {
-                for (int i = 0; i <= Dimension - 1; i++)
+                for (int i = 0; i <= Dimension -1; i++)
                 {
                     result += $"[{this[i]}] \n";
                 }
