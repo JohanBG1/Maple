@@ -21,7 +21,7 @@ public partial class Form1 : Form
     {
         if (e.KeyChar == (char)Keys.Enter)
         {
-
+            currentTextBox.Text += MathParser.Parse(currentTextBox.Text);
         }
     }
 

@@ -14,7 +14,17 @@ public partial class Form1 : Form
         textBox.Width = width;
         textBox.Text = "";
         textBox.Enter += (object? sender, EventArgs e) => currentTextBox = (TextBox)sender;
+        textBox.KeyPress += HandleTextBoxKeyPress;
         Controls.Add(textBox);
+    }
+
+    private void HandleTextBoxKeyPress(object? sender, KeyPressEventArgs e)
+    {
+        if (e.KeyChar == (char)Keys.Enter)
+        {
+            TextBox textBox = (TextBox)sender;
+            textBox.Text += MathParser.Parse(textBox.Text);
+        }
     }
 
     private void HnadleTextBoxEnter(object? sender, EventArgs e)
