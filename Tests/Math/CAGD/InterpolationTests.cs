@@ -21,7 +21,7 @@ public class InterpolationTests : LoggerTests
           new List<double>() {1, 0.5, 0.4 },
           0, 1,
 
-         new List<Vector>() { new Vector(false, 3.7, 4.7, 5.7) } }
+         new List<Vector>() { new Vector(false, 6.7, 7.7, 8.7) } }
     };
 
     public static TheoryData<List<Vector>, List<double>, Vector> BlossomTestData() => new()

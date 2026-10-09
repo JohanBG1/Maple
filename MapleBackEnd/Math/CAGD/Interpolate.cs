@@ -27,13 +27,13 @@ namespace Math
 
 
             List<Vector> interpolatedVectors = new List<Vector>();
-            List<Vector> vectorsLeft = vectors;
+            List<Vector> vectorsLeft = new List<Vector>(vectors);
 
             for (int i = 0; i < interpolations.Count; i++)
             {
                 for (int j = 1; j < vectorsLeft.Count; j++)
                 {
-                    interpolatedVectors.Add(StandardLinearInterpolate(vectors[j - 1], vectors[j], interpolations[i], min, max));
+                    interpolatedVectors.Add(StandardLinearInterpolate(vectorsLeft[j - 1], vectorsLeft[j], interpolations[i], min, max));
                 }
 
                 vectorsLeft = interpolatedVectors;
