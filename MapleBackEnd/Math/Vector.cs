@@ -121,11 +121,11 @@ namespace Math
 
             double[] components = new double[vectors[0].Dimension];
 
-            for (int i = 0; i < vectors.Count; i++)
+            for(int i = 0; i <= dimension -1; i++)
             {
                 double value = 0;
 
-                for (int j = 0; j <= vectors[0].Dimension - 1; j++)
+                for(int j =0; j < vectors.Count; j++)
                 {
                     value += weights[j] * vectors[j][i];
                 }

@@ -29,7 +29,10 @@ public class VectorTests : LoggerTests
     {
         { new List<Vector> {new Vector(true, 1, 2, 3), new Vector(true, 4, 5, 6), new Vector(true, 7, 8, 9)},
           new List<double> {0.1, 0.1, 0.8},
-          new Vector(true, 6.1, 7.1, 8.1) }
+          new Vector(true, 6.1, 7.1, 8.1) },
+        { new List<Vector> {new Vector(true, 1, 2, 3), new Vector(true, 4, 5, 6)},
+          new List<double> {0.9, 0.1},
+          new Vector(true, 1.3, 2.3, 3.3)}
     };
 
     public static TheoryData<Vector, Vector, double> DotTestData() => new()
