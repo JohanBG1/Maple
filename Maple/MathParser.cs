@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace Maple;
@@ -10,79 +11,108 @@ public static class MathParser
     public static string Parse(string expression)
     {
         char c = expression[expression.Count() - 1];
-        string[] parts = expression.Split(' ');
 
-        if (c == ';')
+        string innerExpression = expression.Remove(expression.Count() - 1, 1);
+        
+
+        return c switch
         {
-            TryDefine(parts[0], parts[1], parts[3].Remove(parts[3].Count() - 1, 1));
-            return "";
-        }
+            ';' => Define(innerExpression),
+            ':' => Solve(innerExpression),
+            _ => ""
+        };
+    }
 
-        else if (c == ':')
+    private static string Solve(string innerExpression)
+    {
+        string[] parts = innerExpression.Split(' ');
+
+        ExtractMathOperations(parts, out List<MathOperator> operations);
+        SortAfterOrder(ref operations);
+    }
+
+    private static void SortAfterOrder(ref List<MathOperator> operations)
+    {
+        List<MathOperator> operators = new List<MathOperator>();
+
+        (int current, MathOperator Operator) = (int.MaxValue, operations[0]);
+        
+        while(operations.Count() > 0)
         {
-            List<MathObject> mathObjects = new List<MathObject>();
-            List<string> operations = new List<string>();
-
-            ExtractMathObjectsAndOperations(parts, mathObjects, operations);
-
-            MathObject result = mathObjects[0];
-
-            for(int i = 0; i < mathObjects.Count()-1; i++)
+            foreach (MathOperator operation in operations)
             {
-                result = operations[i] switch
+                if (current > operation.Order)
                 {
-                    "+" => mathObjects[i].Sum(mathObjects[i], mathObjects[i + 1]),
-                    "-" => mathObjects[i].Subtract(mathObjects[i], mathObjects[i + 1])
-                };
-            }
-
-            return result.ToString();
-        }
-
-        return "";
-
-        static void ExtractMathObjectsAndOperations(string[] parts, List<MathObject> mathObjects, List<string> operations)
-        {
-            for (int i = 0; i < parts.Count(); i++)
-            {
-                if (i % 2 == 0)
-                {
-                    MathObject m;
-
-                    if (i == parts.Count() - 1)
-                    {
-                        m = FindMathObjectWithName(parts[i].Remove(parts[i].Count() - 1, 1));
-                    }
-
-                    else
-                    {
-                        m = FindMathObjectWithName(parts[0]);
-                    }
-
-                    mathObjects.Add(m);
-                }
-
-                if (i % 2 == 1)
-                {
-                    operations.Add(parts[i]);
+                    current = operation.Order;
+                    Operator = operation;
                 }
             }
+
+            operators.Add(Operator);
+            operations.Remove(Operator);
+        }
+
+        operations = operators;
+        operators.Clear();
+
+        while(operations.Count() > 0)
+        {
+
         }
     }
 
-    private static void TryDefine(string type, string name, string value)
+    private static string Define(string innerExpression)
     {
-        MathObject m = type switch
-        {
-            "int" => new MInt(MInt.Parse(value)),
-            "vector" => new MVector(MVector.Parse(value)),
-            _ => throw new ArgumentException("Can't define")
-        };
+        string[] parts = innerExpression.Split(' ');
+        TryDefine(parts[0], parts[1], parts[3]);
+        return "";
 
-        definitions[name] = m;
+        static void TryDefine(string type, string name, string value)
+        {
+            MathObject m = type switch
+            {
+                "int" => new MInt(MInt.Parse(value)),
+                "vector" => new MVector(MVector.Parse(value)),
+                _ => throw new ArgumentException("Can't define")
+            };
+
+            definitions[name] = m;
+        }
+    }
+
+    private static void ExtractMathOperations(string[] parts, out List<MathOperator> operations)
+    {
+        operations = new List<MathOperator>();
+
+        for (int i = 0; i < parts.Count(); i++)
+        {
+            if (parts[i] == "+" || parts[i] == "-")
+            {
+                operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i-1]), FindMathObjectWithName(parts[i+1]), 0));
+            }
+        }
+
+        for (int i = 0; i < operations.Count(); i++)
+        {
+            if(i == 0)
+            {
+                operations[i].MB = operations[i + 1];
+            }
+
+            else if(i == parts.Count() -1)
+            {
+                operations[i].MA = operations[i - 1];
+            }
+
+            else
+            {
+                operations[i].MA = operations[i - 1];
+                operations[i].MB = operations[i + 1];
+            }
+        }
     }
 
     private static MathObject FindMathObjectWithName(string name) => (from c in definitions
-                                                               where c.Key == name
-                                                               select c).First().Value;
+                                                           where c.Key == name
+                                                           select c).First().Value;
 }
