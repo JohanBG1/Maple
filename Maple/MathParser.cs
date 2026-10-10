@@ -28,36 +28,63 @@ public static class MathParser
         string[] parts = innerExpression.Split(' ');
 
         ExtractMathOperations(parts, out List<MathOperator> operations);
-        SortAfterOrder(ref operations);
-    }
-
-    private static void SortAfterOrder(ref List<MathOperator> operations)
-    {
-        List<MathOperator> operators = new List<MathOperator>();
-
-        (int current, MathOperator Operator) = (int.MaxValue, operations[0]);
         
-        while(operations.Count() > 0)
+        SortOperations(ref operations);
+
+        MathObject mathObject = operations[0].A;
+
+        foreach (MathOperator mathOperator in operations)
         {
-            foreach (MathOperator operation in operations)
+            mathObject = mathOperator.Calculate();
+        }
+
+        return mathObject.ToString();
+
+        static void SortOperations(ref List<MathOperator> operations)
+        {
+            operations.Sort((a, b) => a.Order.CompareTo(b.Order));
+            operations.Sort((a, b) => a.GetOperatorOrder().CompareTo(b.GetOperatorOrder()));
+        }
+
+        static void ExtractMathOperations(string[] parts, out List<MathOperator> operations)
+        {
+            operations = new List<MathOperator>();
+
+            for (int i = 0; i < parts.Count(); i++)
             {
-                if (current > operation.Order)
+                if (parts[i] == "+" || parts[i] == "-")
                 {
-                    current = operation.Order;
-                    Operator = operation;
+                    operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i - 1]), FindMathObjectWithName(parts[i + 1]), 0));
                 }
             }
 
-            operators.Add(Operator);
-            operations.Remove(Operator);
-        }
+            SetupPointers(parts, operations);
 
-        operations = operators;
-        operators.Clear();
+            static void SetupPointers(string[] parts, List<MathOperator> operations)
+            {
+                for (int i = 0; i < operations.Count(); i++)
+                {
+                    if (operations.Count() == 1) return;
 
-        while(operations.Count() > 0)
-        {
+                    if (i == 0)
+                    {
+                        operations[i].MA = operations[i + 1];
+                        operations[i].MB = null;
+                    }
 
+                    else if (i == operations.Count() - 1)
+                    {
+                        operations[i].MA = null;
+                        operations[i].MB = operations[i - 1];
+                    }
+
+                    else
+                    {
+                        operations[i].MA = operations[i + 1];
+                        operations[i].MB = operations[i - 1];
+                    }
+                }
+            }
         }
     }
 
@@ -77,38 +104,6 @@ public static class MathParser
             };
 
             definitions[name] = m;
-        }
-    }
-
-    private static void ExtractMathOperations(string[] parts, out List<MathOperator> operations)
-    {
-        operations = new List<MathOperator>();
-
-        for (int i = 0; i < parts.Count(); i++)
-        {
-            if (parts[i] == "+" || parts[i] == "-")
-            {
-                operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i-1]), FindMathObjectWithName(parts[i+1]), 0));
-            }
-        }
-
-        for (int i = 0; i < operations.Count(); i++)
-        {
-            if(i == 0)
-            {
-                operations[i].MB = operations[i + 1];
-            }
-
-            else if(i == parts.Count() -1)
-            {
-                operations[i].MA = operations[i - 1];
-            }
-
-            else
-            {
-                operations[i].MA = operations[i - 1];
-                operations[i].MB = operations[i + 1];
-            }
         }
     }
 

@@ -24,11 +24,36 @@ public class MathOperator
         "/" => 1,
     };
 
-    public MathObject Calculate() => Operator switch
+    public MathObject Calculate()
     {
-        "+" => A.Sum(A, B),
-        "-" => A.Subtract(A, B),
-    };
+        MathObject m = Operator switch
+        {
+            "+" => A.Sum(A, B),
+            "-" => A.Subtract(A, B),
+        };
+
+        if(MB != null && MA != null)
+        {
+            MB.B = m;
+            MA.A = m;
+            MB.MA = MA;
+            MA.MB = MB;
+        }
+
+        else if(MB == null && MA != null)
+        {
+            MA.A = m;
+            MA.MB = null;
+        }
+
+        else if (MB != null && MA == null)
+        {
+            MB.B = m;
+            MB.MA = null;
+        }
+
+        return m;
+    }
 
     public MathOperator(string Operator, MathObject a, MathObject b, int order)
     {
