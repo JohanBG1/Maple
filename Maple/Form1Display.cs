@@ -7,29 +7,37 @@ namespace Maple;
 public partial class Form1 : Form
 {
     private TextBox currentTextBox;
-    public void Write(Point position, int width)
+    public void Write(Point position, int width, int height)
     {
         TextBox textBox = new TextBox();
+
+        //MakeAdjustable(textBox);
+       
+        textBox.Font = new Font(textBox.Font.FontFamily, height/2.32f, textBox.Font.Style);
         textBox.Location = position;
         textBox.Width = width;
+        textBox.Height = height;
         textBox.Text = "";
         textBox.Enter += (object? sender, EventArgs e) => currentTextBox = (TextBox)sender;
         textBox.KeyPress += HandleTextBoxKeyPress;
         Controls.Add(textBox);
+
+        void MakeAdjustable(TextBox textBox)
+        {
+            textBox.Multiline = true;
+            textBox.AcceptsReturn = false;
+            textBox.WordWrap = false;
+        }
     }
 
     private void HandleTextBoxKeyPress(object? sender, KeyPressEventArgs e)
     {
         if (e.KeyChar == (char)Keys.Enter)
         {
+            e.Handled = true;
             TextBox textBox = (TextBox)sender;
             textBox.Text += MathParser.Parse(textBox.Text);
         }
-    }
-
-    private void HnadleTextBoxEnter(object? sender, EventArgs e)
-    {
-        throw new NotImplementedException();
     }
 
     public void MakeSpaceWriteable(List<Point> corners, int lineSpacing = Configuration.LineSpacing)
@@ -43,7 +51,7 @@ public partial class Form1 : Form
 
         for(int i = 0; i < lines; i++)
         {
-            Write(new Point(topRight.X, topRight.Y + i * lineSpacing), width);
+            Write(new Point(topRight.X, topRight.Y + i * lineSpacing), width, lineSpacing);
         }
 
 

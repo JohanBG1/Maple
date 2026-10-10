@@ -18,12 +18,12 @@ public static class MathParser
         return c switch
         {
             ';' => Define(innerExpression),
-            ':' => Solve(innerExpression),
+            ':' => Calculate(innerExpression),
             _ => ""
         };
     }
 
-    private static string Solve(string innerExpression)
+    private static string Calculate(string innerExpression)
     {
         string[] parts = innerExpression.Split(' ');
 
@@ -43,18 +43,51 @@ public static class MathParser
         static void SortOperations(ref List<MathOperator> operations)
         {
             operations.Sort((a, b) => a.Order.CompareTo(b.Order));
-            operations.Sort((a, b) => a.GetOperatorOrder().CompareTo(b.GetOperatorOrder()));
+
+            int orderMax = operations[operations.Count() - 1].Order;
+            int orderMin = operations[0].Order;
+
+            List<MathOperator> result = new List<MathOperator>();
+
+            for(int i = orderMin; i <= orderMax; i++)
+            {
+                List<MathOperator> sameOrderOperations = new List<MathOperator>();
+
+                foreach (MathOperator Operator in operations)
+                {
+                    if (Operator.Order == i) sameOrderOperations.Add(Operator);
+                }
+
+                sameOrderOperations.Sort((a, b) => a.GetOperatorOrder().CompareTo(b.GetOperatorOrder()));
+
+                result.AddRange(sameOrderOperations);
+                sameOrderOperations.Clear();
+            }
+
+            operations = result;
         }
 
         static void ExtractMathOperations(string[] parts, out List<MathOperator> operations)
         {
             operations = new List<MathOperator>();
 
+            int currentOrder = int.MaxValue - 1;
+
             for (int i = 0; i < parts.Count(); i++)
             {
+                if (parts[i] == "(") currentOrder--;
+                if (parts[i] == ")") currentOrder++;
+
                 if (parts[i] == "+" || parts[i] == "-")
                 {
-                    operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i - 1]), FindMathObjectWithName(parts[i + 1]), 0));
+                    int currentElementA = -1;
+                    int currentElementB = 1;
+
+                    while (parts[i + currentElementA] == "(" || parts[i + currentElementA] == ")") currentElementA--;
+
+                    while (parts[i + currentElementB] == ")" || parts[i + currentElementB] == "(") currentElementB++;
+
+                    operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i + currentElementA]), FindMathObjectWithName(parts[i + currentElementB]), currentOrder));
                 }
             }
 

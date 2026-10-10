@@ -6,6 +6,6 @@ namespace Maple
 {
     public static class Configuration
     {
-        public const int LineSpacing = 25;
+        public const int LineSpacing = 50;
     }
 }

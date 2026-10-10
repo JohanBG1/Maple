@@ -12,9 +12,7 @@ public partial class Form1 : Form
     {
         KeyPress += HandleKeyPressed;
         
-
-
-        MakeSpaceWriteable(new List<Point>() { new Point(0, 0), new Point(500, 0), new Point(0, 500), new Point(500, 500) }, 25);
+        MakeSpaceWriteable(new List<Point>() { new Point(0, 0), new Point(500, 0), new Point(0, 500), new Point(500, 500) });
     }
 
     private void HandleKeyPressed(object? sender, KeyPressEventArgs e)
