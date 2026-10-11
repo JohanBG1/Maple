@@ -46,6 +46,10 @@ public class OperatorRegistry
         //Ia-Ib
         Add<MInt, MInt>(Operation.Subtract, (a, b) => new MInt(a.Value - b.Value));
         #endregion
+        #region ^
+        //Ia ^Ib
+        Add<MInt, MInt>(Operation.Exponent, (a, b) => new MInt((int)System.Math.Pow((double)a.Value, (double)b.Value)));
+        #endregion
         #endregion
         #region Double
         #region +
@@ -82,7 +86,12 @@ public class OperatorRegistry
         #endregion
         #region ^
         // Da^Db
-        Add<MDouble, MDouble>(Operation.Exponent, (a, b) => new MDouble(MathF.Pow((float)a.Value, (float)b.Value)));
+        Add<MDouble, MDouble>(Operation.Exponent, (a, b) =>
+        {
+            if (!MDouble.CanTakeExponent(a.Value, b.Value)) throw new ArgumentException($"Can't do {a.Value}^{b.Value}");
+
+            return new MDouble(MathF.Pow((float)a.Value, (float)b.Value));
+        });
         //Da^Ib
         Add<MDouble, MInt>(Operation.Exponent, (a, b) => new MDouble(MathF.Pow((float)a.Value, b.Value)));
         // Ia^Db

@@ -13,7 +13,6 @@ public static class MathParser
         char c = expression[expression.Count() - 1];
 
         string innerExpression = expression.Remove(expression.Count() - 1, 1);
-        
 
         return c switch
         {
@@ -75,30 +74,17 @@ public static class MathParser
 
             for (int i = 0; i < parts.Count(); i++)
             {
-                if (parts[i] == "(") currentOrder--;
-                if (parts[i] == ")") currentOrder++;
+                currentOrder = CalculateOrder(parts, currentOrder, i);
 
-                // assing all calculation operators
-
-                bool haveOperation = false;
-
-                foreach (Operation operation in Enum.GetValues(typeof(Operation)))
-                {
-                    if (haveOperation == true) break;
-
-                    haveOperation = parts[i] == OperationHelper.ConvertFromOperationToString(operation);
-                }
+                bool haveOperation = CheckHaveOperation(parts, i);
 
                 if (haveOperation)
                 {
-                    int currentElementA = -1;
-                    int currentElementB = 1;
+                    FindElementsForOperation(out MathObject currentElementA, out MathObject currentElementB, parts, i);
+                    
 
-                    while (parts[i + currentElementA] == "(" || parts[i + currentElementA] == ")") currentElementA--;
 
-                    while (parts[i + currentElementB] == ")" || parts[i + currentElementB] == "(") currentElementB++;
-
-                    operations.Add(new MathOperator(OperationHelper.ConvertFromStringToOperation(parts[i]), FindMathObjectWithName(parts[i + currentElementA]), FindMathObjectWithName(parts[i + currentElementB]), currentOrder));
+                    operations.Add(new MathOperator(OperationHelper.ConvertFromStringToOperation(parts[i]), currentElementA, currentElementB, currentOrder));
                 }
             }
 
@@ -129,30 +115,102 @@ public static class MathParser
                     }
                 }
             }
+
+            static int CalculateOrder(string[] parts, int currentOrder, int i)
+            {
+                if (parts[i] == "(") currentOrder--;
+                if (parts[i] == ")") currentOrder++;
+                return currentOrder;
+            }
+
+            static bool CheckHaveOperation(string[] parts, int i)
+            {
+                bool haveOperation = false;
+
+                foreach (Operation operation in Enum.GetValues(typeof(Operation)))
+                {
+                    if (haveOperation == true) break;
+
+                    haveOperation = parts[i] == OperationHelper.ConvertFromOperationToString(operation);
+                }
+
+                return haveOperation;
+            }
+
+            static void FindElementsForOperation(out MathObject currentElementA, out MathObject currentElementB, string[] parts, int i)
+            {
+                int currentIndexA = i - 1;
+                int currentIndexB = i + 1;
+
+                while (parts[currentIndexA] == "(" || parts[currentIndexA] == ")") currentIndexA--;
+
+                while (parts[currentIndexB] == ")" || parts[currentIndexB] == "(") currentIndexB++;
+
+                FindElement(currentIndexA, out currentElementA, parts);
+                FindElement(currentIndexB, out currentElementB, parts);
+
+                static void FindElement(int index, out MathObject element, string[] parts)
+                {
+
+                    if (TryFindMathObjectWithName(parts[index], out MathObject elementA))
+                    {
+                        element = elementA;
+                    }
+
+                    else
+                    {
+                        string constant = parts[index];
+
+                        string[] constantParts = constant.Split("]");
+
+                        string type = constantParts[0].Remove(0, 1);
+                        string value = constantParts[1];
+
+                        element = TryDefineByInitial(type, value);
+                    }
+                }
+            }
         }
     }
 
     private static string Define(string innerExpression)
     {
         string[] parts = innerExpression.Split(' ');
-        TryDefine(parts[0], parts[1], parts[3]);
+        definitions[parts[1]] = TryDefine(parts[0], parts[3]);
+
         return "";
-
-        static void TryDefine(string type, string name, string value)
-        {
-            MathObject m = type switch
-            {
-                "int" => new MInt(MInt.Parse(value)),
-                "vector" => new MVector(MVector.Parse(value)),
-                "double" => new MDouble(MDouble.Parse(value)),
-                _ => throw new ArgumentException("Can't define")
-            };
-
-            definitions[name] = m;
-        }
     }
 
-    private static MathObject FindMathObjectWithName(string name) => (from c in definitions
-                                                           where c.Key == name
-                                                           select c).First().Value;
+    private static MathObject TryDefine(string type, string value) => type switch
+    {
+        "int" => new MInt(MInt.Parse(value)),
+        "vector" => new MVector(MVector.Parse(value)),
+        "double" => new MDouble(MDouble.Parse(value)),
+        _ => throw new ArgumentException("Can't define")
+    };
+
+    private static MathObject TryDefineByInitial(string type, string value) => type switch
+    {
+        "i" => new MInt(MInt.Parse(value)),
+        "d" => new MDouble(MDouble.Parse(value)),
+        "v" => new MVector(MVector.Parse(value)),
+        _ => throw new ArgumentException("Can't define")
+    };
+
+    private static bool TryFindMathObjectWithName(string name, out MathObject mathObject)
+    {
+        if (definitions.ContainsKey(name))
+        {
+            mathObject = (from c in definitions
+                          where c.Key == name
+                          select c).First().Value;
+            return true;
+        }
+
+        else
+        {
+            mathObject = null;
+            return false;
+        }
+    }
 }

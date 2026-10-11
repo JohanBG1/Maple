@@ -16,4 +16,17 @@ public class MDouble : MathObject
     public static double Parse(string value) => double.Parse(value);
 
     public override string ToString() => Value.ToString();
+
+    #region MathOperationChecks
+    public static bool CanTakeExponent(double a, double exp)
+    {
+        if (System.Math.Pow(exp, -1) % 2 == 0)
+        {
+            return a >= 0;
+        }
+
+        return true;
+    }
+
+    #endregion
 }
