@@ -11,12 +11,12 @@ public class MVector : MathObject
 {
     public MVector(Vector vector)
     {
-        this.Vector = vector;
+        this.Value = vector;
     }
 
-    public Vector Vector { get; private set; }
+    public Vector Value { get; init; }
 
-    internal static Vector Parse(string value)
+    public static Vector Parse(string value)
     {
 
         string inner = value;
@@ -43,25 +43,10 @@ public class MVector : MathObject
                 throw new ArgumentException($"{m.Value} is not a double");
             }
                 
-            return new Vector(false, results);
         }
-
-        throw new ArgumentException("Wrong setup");
+        
+        return new Vector(false, results);
     }
 
-    public MathObject Subtract(MathObject a, MathObject b)
-    {
-        if (!(a is MVector aVector && b is MVector bVector)) throw new ArgumentException("Only works for vectors");
-
-        return new MVector(aVector.Vector - bVector.Vector);
-    }
-
-    public MathObject Sum(MathObject a, MathObject b)
-    {
-        if (!(a is MVector aVector && b is MVector bVector)) throw new ArgumentException("Only works for vectors");
-
-        return new MVector(aVector.Vector + bVector.Vector);
-    }
-
-    public override string ToString() => Vector.ToString();
+    public override string ToString() => Value.ToString();
 }

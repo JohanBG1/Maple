@@ -78,7 +78,18 @@ public static class MathParser
                 if (parts[i] == "(") currentOrder--;
                 if (parts[i] == ")") currentOrder++;
 
-                if (parts[i] == "+" || parts[i] == "-")
+                // assing all calculation operators
+
+                bool haveOperation = false;
+
+                foreach (Operation operation in Enum.GetValues(typeof(Operation)))
+                {
+                    if (haveOperation == true) break;
+
+                    haveOperation = parts[i] == OperationHelper.ConvertFromOperationToString(operation);
+                }
+
+                if (haveOperation)
                 {
                     int currentElementA = -1;
                     int currentElementB = 1;
@@ -87,7 +98,7 @@ public static class MathParser
 
                     while (parts[i + currentElementB] == ")" || parts[i + currentElementB] == "(") currentElementB++;
 
-                    operations.Add(new MathOperator(parts[i], FindMathObjectWithName(parts[i + currentElementA]), FindMathObjectWithName(parts[i + currentElementB]), currentOrder));
+                    operations.Add(new MathOperator(OperationHelper.ConvertFromStringToOperation(parts[i]), FindMathObjectWithName(parts[i + currentElementA]), FindMathObjectWithName(parts[i + currentElementB]), currentOrder));
                 }
             }
 
@@ -133,6 +144,7 @@ public static class MathParser
             {
                 "int" => new MInt(MInt.Parse(value)),
                 "vector" => new MVector(MVector.Parse(value)),
+                "double" => new MDouble(MDouble.Parse(value)),
                 _ => throw new ArgumentException("Can't define")
             };
 

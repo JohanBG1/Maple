@@ -6,6 +6,5 @@ namespace Maple;
 
 public interface MathObject
 {
-    public MathObject Sum(MathObject a, MathObject b);
-    public MathObject Subtract(MathObject a, MathObject b);
+
 }

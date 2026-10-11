@@ -83,6 +83,8 @@ namespace Math
 
             return new Vector(false, components);
         }
+
+        public static Vector operator /(Vector a, double scalar) => (1 / scalar) * a;
         
         public static Vector MakeAffineCombination(params List<(Vector vector, double weight)> vectorWeightSets)
         {
@@ -168,14 +170,16 @@ namespace Math
                 result += $"{this[Dimension - 1]})";
             }
 
-            
-
             else
             {
-                for (int i = 0; i <= Dimension -1; i++)
+                result = "[";
+
+                for (int i = 0; i < Dimension -1; i++)
                 {
-                    result += $"[{this[i]}] \n";
+                    result += $" {this[i]},";
                 }
+
+                result += $"{this[Dimension - 1]}]";
             }
 
             return result;
